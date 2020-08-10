@@ -2,6 +2,12 @@ import path from 'path';
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import express from 'express';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import NEL from 'network-error-logging';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import reportTo from 'report-to';
 import handleError from './error/controllers/handleError';
 import morganMiddleware from './log/middlewares/morgan.middleware';
 import sendIndexPage from './page/controllers/sendIndexPage';
@@ -17,6 +23,30 @@ const app = express()
   .use(morganMiddleware())
   .use(corsMiddleware())
   .use(helmetMiddleware())
+  .use(
+    reportTo({
+      groups: [
+        {
+          group: 'default',
+          max_age: 31536000,
+          endpoints: [
+            {
+              url: 'https://hongbomiao.report-uri.com/a/d/g',
+              priority: 1,
+            },
+          ],
+          include_subdomains: true,
+        },
+      ],
+    })
+  )
+  .use(
+    NEL({
+      report_to: 'default',
+      max_age: 31536000,
+      include_subdomains: true,
+    })
+  )
   .use(redirectSSLMiddleware())
   .get('/', sendIndexPage)
   .use(express.static(path.join(__dirname, '../dist')))

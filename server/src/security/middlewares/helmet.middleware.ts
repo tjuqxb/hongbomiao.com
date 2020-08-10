@@ -103,7 +103,7 @@ const helmetMiddleware = (): RequestHandler => {
           frameAncestors: ["'none'"],
 
           /* Reporting directives */
-          reportUri: `https://${Config.domain}:${Config.port}/api/violation/report-csp-violation`,
+          reportUri: 'https://hongbomiao.report-uri.com/r/d/csp/enforce',
 
           /* Other directives */
           /*
