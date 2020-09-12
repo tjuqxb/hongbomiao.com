@@ -13,6 +13,9 @@ if (REACT_APP_SERVER_PORT == null || REACT_APP_SERVER_PORT === '') {
 const Config = {
   nodeEnv: NODE_ENV,
 
+  serverDomain: REACT_APP_SERVER_DOMAIN,
+  serverPort: REACT_APP_SERVER_PORT,
+
   githubURL: 'https://github.com/hongbo-miao/hongbomiao.com',
   graphQLURL: `https://${REACT_APP_SERVER_DOMAIN}:${REACT_APP_SERVER_PORT}/graphql`,
 

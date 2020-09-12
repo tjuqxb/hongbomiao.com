@@ -15,6 +15,8 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import Config from '../../Config';
+import createCSPNonce from './createCSPNonce';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -81,6 +83,19 @@ registerRoute(
     ],
   })
 );
+
+registerRoute(new RegExp('.js$'), async ({ request, event }) => {
+  const staleWhileRevalidate = new StaleWhileRevalidate();
+  const cachedResponse = await staleWhileRevalidate.handle({ request, event });
+  if (cachedResponse) {
+    const cspNonce = createCSPNonce();
+    cachedResponse.headers.set(
+      'content-security-policy',
+      `connect-src 'self' https://rs.fullstory.com https://www.google-analytics.com https://ingest.lightstep.com;default-src 'none';font-src 'self' data: https://fonts.gstatic.com;frame-src https://bid.g.doubleclick.net;img-src 'self' data: https://www.googletagmanager.com https://ssl.gstatic.com https://www.google-analytics.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://www.google.com;manifest-src 'self';media-src 'none';object-src 'none';script-src 'strict-dynamic' 'nonce-${cspNonce}' 'self' https://static.cloudflareinsights.com https://edge.fullstory.com https://fullstory.com https://www.googletagmanager.com https://tagmanager.google.com https://www.google-analytics.com https://ssl.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com;style-src 'self' https://tagmanager.google.com https://fonts.googleapis.com;base-uri 'none';sandbox allow-popups allow-same-origin allow-scripts;form-action 'none';frame-ancestors 'none';report-uri https://${Config.serverDomain}:${Config.serverPort}/api/violation/report-csp-violation;upgrade-insecure-requests`
+    );
+  }
+  return cachedResponse;
+});
 
 /*
  * This allows the web app to trigger skipWaiting via
